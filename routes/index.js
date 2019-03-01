@@ -22,35 +22,43 @@ router.post('/', function(req, res, next){
   // console.log("post请求：参数", query);
   // console.log(req.body)
   // res.send('hello , world');
+ if (query.username != '' && query.password !== ''){
   db.query("select isadmin from stuinfo where username = '"+query.username+"'", function(err, rows){
     if (err) {
       return res.send('查询失败' + err)
-    } else {
-     // req.secret='abcdedf';
-        // res.cookie('name',id,{maxAge: 1000*60*60*24*30, signed:true})
-        // console.log(req.cookies.name);                                                                                                           
-        let content ={name:req.body.username}
-        let secretOrPrivateKey="suiyi"
-        let token = jwt.sign(content, secretOrPrivateKey, {
-          expiresIn: 60*2  // 1小时过期
-      });
-      db.query("update stuinfo set token= '"+token+"' where username = '"+query.username+"'", function(err, rows){
-        if(err) {
-          console.log('存入失败' + err)
-        } else {
-          console.log('存入成功')
-          console.log('22', rows)
-        }
-      })
-      res.send({
-        'code': '0',
-        'msg':'登陆成功',
-        'token':token,
-        'username':req.body.username,
-        'isadmin': 1
-      })
+    } else if(rows) {
+      console.log('结果', rows)
+      // req.secret='abcdedf';
+         // res.cookie('name',id,{maxAge: 1000*60*60*24*30, signed:true})
+         // console.log(req.cookies.name);                                                                                                           
+         let content ={name:req.body.username}
+         let secretOrPrivateKey="suiyi"
+         let token = jwt.sign(content, secretOrPrivateKey, {
+           expiresIn: 60*2  // 1小时过期
+       });
+       db.query("update stuinfo set token= '"+token+"' where username = '"+query.username+"'", function(err, rows){
+         if(err) {
+           console.log('存入失败' + err)
+         } else {
+           console.log('存入成功')
+           console.log('22', rows)
+         }
+       })
+       res.send({
+         'code': '0',
+         'msg':'登陆成功',
+         'token':token,
+         'username':req.body.username,
+         'isadmin': 1
+       })
     }
   })
+ } else {
+   res.send({
+     code: '-4',
+     msg: '参数不能为空'
+   })
+ }
 })
 router.post('/adduser',function(req, res, next) {
   var username = req.body.username

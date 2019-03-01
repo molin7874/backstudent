@@ -164,4 +164,17 @@ router.post('/delorganize', function(req, res){
     })
   }
 })
+router.get('/countgrade', function(req, res){
+  console.log(req.query)
+  let gradelist = []
+  let grade = ['大一', '大二', '大三', '大四']
+  db.query("select sum(case when grade='大一' then 1 else 0 end) as total1,sum(case when grade='大二' then 1 else 0 end) as total2,sum(case when grade='大三' then 1 else 0 end) as total3,sum(case when grade='大四' then 1 else 0 end) as total4 from stuinfo", function(err, rows){
+    if(err){
+      console.log(err)
+    } else if(rows){
+      // console.log(rows[0].total1)
+      res.send([rows[0].total1, rows[0].total2, rows[0].total3, rows[0].total4])
+    }
+  })
+})
 module.exports = router;
