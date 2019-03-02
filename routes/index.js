@@ -3,6 +3,9 @@ var router = express.Router()
 var db = require('../config/db')
 var jwt = require('jsonwebtoken');
 var config = require('../config/token');
+var formidable = require('formidable');
+var fs = require("fs");
+let path = require("path");
 /* GET home page. */
 router.get('/api/selectAll', function(req, res, next) {
   db.query('select * from account', function(err, rows) {
@@ -109,5 +112,37 @@ router.post('/api/admin/checkuser',function (req,res){
       })
     }
   })
+})
+router.post('/upload', function (req,res, next) {
+  var form = new formidable.IncomingForm();
+  form.encoding = 'utf-8';
+  form.keepExtensions = true
+  form.uploadDir = "./public/images"
+  form.maxFieldsSize = 2 * 1024 * 1024
+  form.parse(req, function(err, fields, files) {
+      let returnname = '' 
+      let ran = parseInt(Math.random() * 89999 + 10000);
+      let extname = path.extname(files.file.name);
+      let oldpath=__dirname+'/'+files.file.path
+      let newpath = __dirname + '/public/images/' + ran + extname;
+      // console.log("files:",files)  //这里能获取到图片的信息
+      // console.log(files.file.path)
+      // console.log(files)
+      // console.log(fields)
+      returnname = path.basename(oldpath)
+      fs.rename(oldpath,newpath,function (err) {
+          if (err){
+              console.log('重命名不成功'+ err);
+              return;
+          }
+          console.log('重命名成功');
+      })
+      res.send({
+        code: '0',
+        msg: '发送成功',
+        name: returnname
+    })
+  })
+  // console.log(req.file);//获取到的文件
 })
 module.exports = router

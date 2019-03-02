@@ -177,4 +177,20 @@ router.get('/countgrade', function(req, res){
     }
   })
 })
+router.get('/countmajor', function(req, res){
+  let res1 = ['计算机', '会计', '软件工程']
+  let res2 = []
+    db.query("select sum(case when major='计算机' then 1 else 0 end) as value1, sum(case when major='会计' then 1 else 0 end) as value2 , sum(case when major='软件' then 1 else 0 end) as value3 from stuinfo", function(err, rows){
+      if (err){
+        console.log(err)
+      } else if (rows){
+        res.send([rows[0].value1, rows[0].value2, rows[0].value3])
+      }
+    })
+})
+router.get('/countmajortype', function(req, res){
+  let query = req.query
+  console.log('查询参数',query)
+
+})
 module.exports = router;
