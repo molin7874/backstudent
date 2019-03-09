@@ -6,13 +6,46 @@ var config = require('../config/token');
 var formidable = require('formidable');
 var fs = require("fs");
 let path = require("path");
-/* GET home page. */
+/* 路由拦截 */
+router.use('*', function(req,res,next){
+  if(req.url=== '/' || req.url === '/adduser') {
+    // console.log(req.headers.token)
+    console.log(req.url)
+    console.log('请求路劲为登录')
+    next()
+  }else if (req.header('STDTOKEN')){
+    let token = req.header('STDTOKEN')
+    db.query("select token from stuinfo where token = '"+token+"'", function(err, rows){
+      if (err){
+        res.send(err)
+        return
+      }else {
+        let secretOrPrivateKey="suiyi"
+        jwt.verify(token, secretOrPrivateKey, function(err, decode){
+          if (err) {
+            console.log(err + token)
+            return res.send({
+              code: '-4',
+              msg: 'token失效'
+            })
+          } else {
+            console.log(decode)
+            // res.json({
+            //   code: '0',
+            //   msg: '成功' + decode
+            // })
+            next()
+          }
+        })
+      }
+    })
+  }
+})
 router.get('/api/selectAll', function(req, res, next) {
   db.query('select * from account', function(err, rows) {
     if (err) {
       res.status(403)
     } else {
-      console.log(req.cookies.name);
       res.json(rows)
     }
   })
@@ -22,18 +55,12 @@ router.get('/', function(req, res, next) {
 })
 router.post('/', function(req, res, next){
   var query = req.body;
-  // console.log("post请求：参数", query);
-  // console.log(req.body)
-  // res.send('hello , world');
  if (query.username != '' && query.password !== ''){
-  db.query("select isadmin from stuinfo where username = '"+query.username+"'", function(err, rows){
+  db.query("select username,isadmin, password, userimg from stuinfo where username = '"+query.username+"' and password = '"+query.password+"'", function(err, rows){
     if (err) {
       return res.send('查询失败' + err)
-    } else if(rows) {
-      console.log('结果', rows)
-      // req.secret='abcdedf';
-         // res.cookie('name',id,{maxAge: 1000*60*60*24*30, signed:true})
-         // console.log(req.cookies.name);                                                                                                           
+    } else if(rows.length !== 0 && rows[0].username === query.username && rows[0].password === query.password) {
+      console.log('结果', rows)                                                                                             
          let content ={name:req.body.username}
          let secretOrPrivateKey="suiyi"
          let token = jwt.sign(content, secretOrPrivateKey, {
@@ -52,8 +79,14 @@ router.post('/', function(req, res, next){
          'msg':'登陆成功',
          'token':token,
          'username':req.body.username,
-         'isadmin': 1
+         'isadmin': rows[0].isadmin,
+         'img': rows[0].userimg
        })
+    } else {
+      res.send({
+        code: '-5',
+        msg: '参数有误'
+      })
     }
   })
  } else {
@@ -130,6 +163,13 @@ router.post('/upload', function (req,res, next) {
       // console.log(files)
       // console.log(fields)
       returnname = path.basename(oldpath)
+      db.query("update stuinfo set userimg = '"+returnname+"' where username = 'admin'", function(err, rows){
+        if(err){
+          console.log('图片插入错误',err)
+        } else if(rows) {
+          console.log('插入图片成功', rows)
+        }
+      })
       fs.rename(oldpath,newpath,function (err) {
           if (err){
               console.log('重命名不成功'+ err);

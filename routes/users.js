@@ -14,9 +14,27 @@ router.get('/login', function(req, res, next){
 router.get('/register', function(req, res, next){
   res.render("./register");
 })
+router.get('/viewbyid', function(req,res){
+  let id = req.query.id
+  let isadmin = req.query.isadmin
+  if(isadmin === '1'){
+    db.query("select * from stuinfo where id = '"+id+"'", function(err, rows){
+      if(err){
+        console.log(err)
+      } else if(rows){
+        res.json(rows)
+      }
+    })
+  } else if (isadmin !== '1'){
+    return res.json({
+      code: '-5',
+      msg: '无权编辑会员数据'
+    })
+  }
+})
 router.get('/getstudydivision', function(req, res){
-  let division = '学习部'
-  db.query("selec * from stuinfo where division ='"+division+"' ", function(err, rows){
+  let division = 'study'
+  db.query("select * from stuinfo where division ='"+division+"' ", function(err, rows){
     if(err) {
       res.send(err)
     } else if (rows){
@@ -25,8 +43,8 @@ router.get('/getstudydivision', function(req, res){
   })
 })
 router.get('/getsportsdivision', function(req, res){
-  let division = '体育部'
-  db.query("selec * from stuinfo where division ='"+division+"' ", function(err, rows){
+  let division = 'sport'
+  db.query("select * from stuinfo where division ='"+division+"' ", function(err, rows){
     if(err) {
       res.send(err)
     } else if (rows){
@@ -35,8 +53,8 @@ router.get('/getsportsdivision', function(req, res){
   })
 })
 router.get('/getorganizesdivision', function(req, res){
-  let division = '组织部'
-  db.query("selec * from stuinfo where division ='"+division+"' ", function(err, rows){
+  let division = 'organize'
+  db.query("select * from stuinfo where division ='"+division+"' ", function(err, rows){
     if(err) {
       res.send(err)
     } else if (rows){
@@ -66,13 +84,13 @@ router.post('/editstudy', function(req, res){
 })
 router.post('/delstudy', function(req, res){
   let query = req.body
-  if(query.isadmin !== 1){
+  if(query.isadmin !== '1'){
     return res.send ({
       code: '-5',
       msg: '权限不够'
     })
   } else if(query.isadmin === 1) {
-    db.query("delete from stuinfo where username = '"+query.username+"'", function(err, rows){
+    db.query("delete from stuinfo where id = '"+query.id+"'", function(err, rows){
       if (err) {
         res.send(err)
       } else if (rows){
