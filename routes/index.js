@@ -72,7 +72,7 @@ router.post('/', function(req, res, next){
     if (err) {
       return res.send('查询失败' + err)
     } else if(rows.length !== 0 && rows[0].username === query.username && rows[0].password === query.password) {
-      console.log('结果', rows)                                                                                             
+      console.log('结果', rows)
          let content ={name:req.body.username}
          let secretOrPrivateKey="suiyi"
          let token = jwt.sign(content, secretOrPrivateKey, {
@@ -92,7 +92,8 @@ router.post('/', function(req, res, next){
          'token':token,
          'username':req.body.username,
          'isadmin': rows[0].isadmin,
-         'img': rows[0].userimg
+         'img': rows[0].userimg,
+         'id': rows[0].id
        })
     } else {
       res.send({
@@ -124,7 +125,7 @@ router.post('/adduser',function(req, res, next) {
       } else {
         res.json({
           code: '0',
-          msg: '注册成功' + rows
+          msg: '注册成功, 欢迎' + username,
         })
       }
     }
@@ -165,7 +166,7 @@ router.post('/upload', function (req,res, next) {
   form.uploadDir = "./public/images"
   form.maxFieldsSize = 2 * 1024 * 1024
   form.parse(req, function(err, fields, files) {
-      let returnname = '' 
+      let returnname = ''
       let ran = parseInt(Math.random() * 89999 + 10000);
       let extname = path.extname(files.file.name);
       let oldpath=__dirname+'/'+files.file.path
